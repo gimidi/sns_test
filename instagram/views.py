@@ -109,7 +109,10 @@ def newsfeed(request):
     following_users = Follow.objects.filter(follower=user).values_list('followee', flat=True)  # 팔로우한 사람들 ID 가져오기
 
     # 해당 사용자의 팔로우한 사람들의 게시글을 최신순으로 가져오기
-    posts = Post.objects.filter(user_id__in=following_users).order_by('-created_at')
+    posts = Post.objects.filter(user_id__in=following_users) \
+        .select_related('user') \
+        .prefetch_related('comments') \
+        .order_by('-created_at')
 
     # 결과 반환
     post_list = [
