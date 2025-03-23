@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'instagram',
     'rest_framework',
     'rest_framework_simplejwt',
+    'storages'
 ]
 
 MIDDLEWARE = [
@@ -133,3 +134,15 @@ REST_FRAMEWORK = {
 #     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),  # 리프레시 토큰 만료 시간
 #     'AUTH_HEADER_TYPES': ('Bearer',),
 # }
+
+# ----------------------------
+# AWS S3 설정 (이미지 업로드용)
+# ----------------------------
+AWS_ACCESS_KEY_ID = 'access-key'
+AWS_SECRET_ACCESS_KEY = 'secret-key'
+AWS_STORAGE_BUCKET_NAME = 'bucket-name'
+AWS_S3_REGION_NAME = 'ap-northeast-2'
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'

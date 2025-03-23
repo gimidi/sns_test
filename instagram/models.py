@@ -5,6 +5,7 @@ class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts', default=1)  # FK 추가
     title = models.CharField(max_length=255)
     contents = models.TextField()
+    image = models.ImageField(upload_to='posts/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

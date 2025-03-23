@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Post, Follow
 from .serializers import UserSerializer
 
@@ -55,15 +56,23 @@ def refresh_token(request):
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
 def create_post(request):
     try:
         data = request.data
+        image = request.FILES.get('image')
         post = Post.objects.create(
             user=request.user,
             title=data['title'],
-            contents=data['contents']
+            contents=data['contents'],
+            image=image
         )
-        return Response({"id": post.id, "title": post.title, "contents": post.contents, "message": "게시글이 성공적으로 등록되었습니다!"}, status=201)
+        return Response({
+            "id": post.id,
+            "title": post.title,
+            "contents": post.contents,
+            "image_url": post.image.url if post.image else None,
+            "message": "게시글이 성공적으로 등록되었습니다!"}, status=201)
     except KeyError:
         return Response({"오류": "필수 항목이 누락되었습니다. 제목과 내용을 입력하세요."}, status=400)
 
@@ -128,3 +137,32 @@ def newsfeed(request):
     ]
 
     return Response({"newsfeed": post_list, "message": "뉴스피드를 가져왔습니다!"}, status=200)
+
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
+def upload_post(request):
+    user = request.user
+    title = request.data.get('title')
+    contents = request.data.get('contents')
+    image = request.FILES.get('image')  # 이미지 파일은 FILES에서 가져와야 함
+
+    post = Post.objects.create(
+        user=user,
+        title=title,
+        contents=contents,
+        image=image
+    )
+
+    return Response({
+        'message': '게시글이 업로드되었습니다!',
+        'post': {
+            'id': post.id,
+            'title': post.title,
+            'contents': post.contents,
+            'image_url': post.image.url if post.image else None,
+            'created_at': post.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        }
+    })
